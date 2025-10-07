@@ -1,5 +1,4 @@
 <!doctype html>
-
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
@@ -11,61 +10,43 @@
       --accent: #ff6b6b; --glass: rgba(255,255,255,0.06);
     }
     html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial}
-    .app{height:100%;overflow:hidden;position:relative;background:linear-gradient(160deg,var(--bg1),#0b1220 40%,var(--bg2));color:#fff}/* 屏幕容器（竖向堆叠） */
-.stack{height:300%;transition:transform .7s cubic-bezier(.2,.9,.2,1);}
-.screen{height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;box-sizing:border-box}
+    .app{height:100%;overflow:hidden;position:relative;background:linear-gradient(160deg,var(--bg1),#0b1220 40%,var(--bg2));color:#fff}
 
-/* Screen 1: 解锁 */
-.unlock{flex-direction:column;text-align:center}
-.logo{font-weight:700;font-size:28px;letter-spacing:1px;margin-bottom:18px}
-.panel{width:340px;max-width:92vw;background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));border-radius:14px;padding:22px;backdrop-filter: blur(6px);box-shadow: 0 6px 30px rgba(2,6,23,0.6);}
-label{display:block;text-align:left;font-size:14px;color:rgba(255,255,255,0.9);margin-bottom:8px}
-input[type="password"]{width:100%;padding:12px 14px;border-radius:10px;border:none;background:rgba(255,255,255,0.03);color:white;font-size:16px;box-sizing:border-box}
-.hint{font-size:13px;margin-top:10px;color:rgba(255,255,255,0.6)}
-.btn{margin-top:12px;width:100%;padding:10px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent),#ff9a6b);color:#111;font-weight:700;font-size:15px;cursor:pointer}
-.err{color:#ffb4b4;margin-top:10px;font-size:13px;min-height:18px}
+    .stack{height:300%;transition:transform .7s cubic-bezier(.2,.9,.2,1);}
+    .screen{height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;box-sizing:border-box}
 
-/* Screen 2: 向上滑动提示 + "sexy" 图案 */
-.swipeScreen{position:relative;overflow:hidden}
-.swipeHint{position:absolute;top:18px;left:0;right:0;text-align:center;font-size:14px;opacity:.9}
-.patternGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;width:min(980px,92vw);}
-.card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:16px;padding:18px;min-height:160px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-/* 让图案看起来更“性感” — 使用流动曲线、心形、渐变与微光 */
-.curve{position:absolute;right:-20%;bottom:-40%;width:200%;height:200%;background:radial-gradient(circle at 30% 30%, rgba(255,106,156,0.18), transparent 25%), linear-gradient(120deg, rgba(124,58,237,0.14), rgba(255,107,107,0.06));transform:rotate(-18deg);filter:blur(12px);}
-.heart{width:80px;height:80px;position:relative}
-.heart:before,.heart:after{content:'';position:absolute;left:40px;top:0;width:40px;height:64px;background:radial-gradient(circle at 30% 20%, #ff6b6b, #ff3d6e);border-radius:40px 40px 0 0;transform:rotate(-45deg)}
-.heart:after{left:0;transform:rotate(45deg)}
-.gloss{position:absolute;inset:0;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent)}
-.pulse{animation:pulse 2.8s infinite}
-@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
+    .unlock{flex-direction:column;text-align:center}
+    .logo{font-weight:700;font-size:28px;letter-spacing:1px;margin-bottom:18px}
+    .panel{width:340px;max-width:92vw;background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));border-radius:14px;padding:22px;backdrop-filter: blur(6px);box-shadow: 0 6px 30px rgba(2,6,23,0.6);}
+    label{display:block;text-align:left;font-size:14px;color:rgba(255,255,255,0.9);margin-bottom:8px}
+    input[type="password"]{width:100%;padding:12px 14px;border-radius:10px;border:none;background:rgba(255,255,255,0.03);color:white;font-size:16px;box-sizing:border-box}
+    .hint{font-size:13px;margin-top:10px;color:rgba(255,255,255,0.6)}
+    .btn{margin-top:12px;width:100%;padding:10px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent),#ff9a6b);color:#111;font-weight:700;font-size:15px;cursor:pointer}
+    .err{color:#ffb4b4;margin-top:10px;font-size:13px;min-height:18px}
 
-/* Screen 3: 最终—打开链接 + emoji 悬浮 */
-.final{display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center;background:linear-gradient(180deg,#071021,#0b1220);}
-.openNote{font-size:15px;color:rgba(255,255,255,0.9)}
-.openLink{padding:10px 16px;border-radius:12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.03);color:#fff;text-decoration:none}
+    .swipeScreen{position:relative;overflow:hidden}
+    .swipeHint{position:absolute;top:18px;left:0;right:0;text-align:center;font-size:14px;opacity:.9}
+    .patternGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;width:min(980px,92vw);}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:16px;padding:18px;min-height:160px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+    .curve{position:absolute;right:-20%;bottom:-40%;width:200%;height:200%;background:radial-gradient(circle at 30% 30%, rgba(255,106,156,0.18), transparent 25%), linear-gradient(120deg, rgba(124,58,237,0.14), rgba(255,107,107,0.06));transform:rotate(-18deg);filter:blur(12px);}
+    .heart{width:80px;height:80px;position:relative}
+    .heart:before,.heart:after{content:'';position:absolute;left:40px;top:0;width:40px;height:64px;background:radial-gradient(circle at 30% 20%, #ff6b6b, #ff3d6e);border-radius:40px 40px 0 0;transform:rotate(-45deg)}
+    .heart:after{left:0;transform:rotate(45deg)}
+    .gloss{position:absolute;inset:0;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent)}
+    .pulse{animation:pulse 2.8s infinite}
+    @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
 
-/* Emoji overlay */
-.emojiOverlay{position:fixed;inset:0;pointer-events:none;z-index:9999}
-.emoji{position:absolute;font-size:36px;transform:translate(-50%,-50%) scale(0);opacity:0;animation:pop 1s forwards, floaty 6s infinite;}
-.emoji.e1{left:20%;top:30%;animation-delay:.1s}
-.emoji.e2{left:70%;top:25%;animation-delay:.2s}
-.emoji.e3{left:50%;top:60%;animation-delay:.3s}
-.emoji.e4{left:82%;top:70%;animation-delay:.4s}
-@keyframes pop{0%{transform:translate(-50%,-50%) scale(0);opacity:0}60%{transform:translate(-50%,-50%) scale(1.85);opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:1}}
-@keyframes floaty{0%{transform:translate(-50%,-50%) translateY(0)}50%{transform:translate(-50%,-50%) translateY(-18px)}100%{transform:translate(-50%,-50%) translateY(0)}}
+    .final{display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center;background:linear-gradient(180deg,#071021,#0b1220);}
+    .openNote{font-size:15px;color:rgba(255,255,255,0.9)}
+    .openLink{padding:10px 16px;border-radius:12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.03);color:#fff;text-decoration:none}
 
-/* 小提示和可用性 */
-.small{font-size:13px;color:rgba(255,255,255,0.6)}
-
-/* 响应式 */
-@media (max-width:640px){.patternGrid{grid-template-columns:repeat(2,1fr)} .card{min-height:130px}}
-
+    .small{font-size:13px;color:rgba(255,255,255,0.6)}
+    @media (max-width:640px){.patternGrid{grid-template-columns:repeat(2,1fr)} .card{min-height:130px}}
   </style>
 </head>
 <body>
   <div class="app" id="app">
     <div class="stack" id="stack">
-      <!-- Screen 1: Unlock -->
       <section class="screen unlock">
         <div class="panel" role="region" aria-label="解锁面板">
           <div class="logo">私人解锁面板</div>
@@ -77,59 +58,50 @@ input[type="password"]{width:100%;padding:12px 14px;border-radius:10px;border:no
             <div class="hint">密码格式为小写英文字母（示例）</div>
           </form>
         </div>
-      </section><!-- Screen 2: Swipe to continue (sexy patterns) -->
-  <section class="screen swipeScreen" id="swipeScreen">
-    <div class="swipeHint">向上滑动 / 向上拖拽以进入下一页 ↑</div>
-    <div class="patternGrid">
-      <div class="card">
-        <div class="curve"></div>
-        <div class="heart pulse" aria-hidden="true"></div>
-      </div>
-      <div class="card">
-        <div class="curve"></div>
-        <div style="width:70px;height:70px;border-radius:50%;background:conic-gradient(#ff6b6b,#ff9a6b,#7c3aed);filter:blur(.2px);"></div>
-      </div>
-      <div class="card">
-        <div class="curve"></div>
-        <div style="font-size:22px;opacity:.95;">柔和的线条 · 流光</div>
-      </div>
-      <div class="card">
-        <div class="curve"></div>
-        <div style="width:70px;height:70px;border-radius:14px;background:linear-gradient(135deg,#7c3aed66,#ff6b6b66);box-shadow:0 6px 30px rgba(0,0,0,.25)"></div>
-      </div>
-      <div class="card">
-        <div class="curve"></div>
-        <div style="font-size:20px">温暖 · 诱惑 · 艳丽</div>
-      </div>
-      <div class="card">
-        <div class="curve"></div>
-        <div style="font-size:18px">轻触 · 享受</div>
-      </div>
+      </section>
+
+      <section class="screen swipeScreen" id="swipeScreen">
+        <div class="swipeHint">向上滑动 / 向上拖拽以进入下一页 ↑</div>
+        <div class="patternGrid">
+          <div class="card">
+            <div class="curve"></div>
+            <div class="heart pulse" aria-hidden="true"></div>
+          </div>
+          <div class="card">
+            <div class="curve"></div>
+            <div style="width:70px;height:70px;border-radius:50%;background:conic-gradient(#ff6b6b,#ff9a6b,#7c3aed);filter:blur(.2px);"></div>
+          </div>
+          <div class="card">
+            <div class="curve"></div>
+            <div style="font-size:22px;opacity:.95;">柔和的线条 · 流光</div>
+          </div>
+          <div class="card">
+            <div class="curve"></div>
+            <div style="width:70px;height:70px;border-radius:14px;background:linear-gradient(135deg,#7c3aed66,#ff6b6b66);box-shadow:0 6px 30px rgba(0,0,0,.25)"></div>
+          </div>
+          <div class="card">
+            <div class="curve"></div>
+            <div style="font-size:20px">温暖 · 诱惑 · 艳丽</div>
+          </div>
+          <div class="card">
+            <div class="curve"></div>
+            <div style="font-size:18px">轻触 · 享受</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen final" id="final">
+        <div>
+          <div class="openNote">页面已打开外部链接（如果浏览器阻止弹出，请点击下面的按钮）</div>
+          <div style="height:10px"></div>
+          <a id="openBtn" class="openLink" href="https://b23.tv/RtDSAPY" target="_blank" rel="noopener noreferrer">打开 b23.tv/RtDSAPY</a>
+        </div>
+      </section>
+
     </div>
-  </section>
+  </div>
 
-  <!-- Screen 3: Final (open link and show emojis) -->
-  <section class="screen final" id="final">
-    <div>
-      <div class="openNote">页面已打开外部链接（如果浏览器阻止弹出，请点击下面的按钮）</div>
-      <div style="height:10px"></div>
-      <a id="openBtn" class="openLink" href="https://b23.tv/RtDSAPY" target="_blank" rel="noopener noreferrer">打开 b23.tv/RtDSAPY</a>
-      <div style="height:14px"></div>
-      <div class="small">同时页面上会出现放大表情 —— 😂🤣👉🤡</div>
-    </div>
-  </section>
-
-</div>
-
-<!-- Emoji overlay (默认隐藏，通过脚本激活) -->
-<div class="emojiOverlay" id="emojiOverlay" aria-hidden="true" style="display:none">
-  <div class="emoji e1">😂</div>
-  <div class="emoji e2">🤣</div>
-  <div class="emoji e3">👉</div>
-  <div class="emoji e4">🤡</div>
-</div>
-
-  </div>  <script>
+  <script>
     (function(){
       const PASSWORD = 'xiaoyuniubi';
       const stack = document.getElementById('stack');
@@ -137,10 +109,8 @@ input[type="password"]{width:100%;padding:12px 14px;border-radius:10px;border:no
       const pwInput = document.getElementById('pw');
       const err = document.getElementById('err');
       const swipeScreen = document.getElementById('swipeScreen');
-      const emojiOverlay = document.getElementById('emojiOverlay');
-      let currentIndex = 0; // 0 unlock, 1 swipe, 2 final
+      let currentIndex = 0;
 
-      // Unlock handler
       pwForm.addEventListener('submit', function(e){
         e.preventDefault();
         const v = (pwInput.value||'').trim();
@@ -154,89 +124,51 @@ input[type="password"]{width:100%;padding:12px 14px;border-radius:10px;border:no
         }
       });
 
-      // goTo: translate stack to show desired index
       function goTo(i){
         currentIndex = i;
         stack.style.transform = `translateY(-${i*100}vh)`;
-        // if goTo(2) show final actions
         if(i===2) enterFinal();
       }
 
-      // Swipe detection (supports touch & mouse drag)
       (function(){
         let startY = null, lastY = null, isTouch = false;
-        const threshold = 90; // px upward
+        const threshold = 90;
 
         function onStart(y){ startY = y; lastY = y; }
         function onMove(y){ if(startY==null) return; lastY = y; }
         function onEnd(){
           if(startY==null) return; const dy = startY - lastY; startY = null; lastY = null;
-          if(dy > threshold){ // upward swipe
+          if(dy > threshold){
             if(currentIndex===1) goTo(2);
           }
         }
 
-        // Touch
         swipeScreen.addEventListener('touchstart', e=>{ isTouch=true; onStart(e.touches[0].clientY); },{passive:true});
         swipeScreen.addEventListener('touchmove', e=>{ onMove(e.touches[0].clientY); },{passive:true});
         swipeScreen.addEventListener('touchend', onEnd);
 
-        // Mouse (desktop drag)
         swipeScreen.addEventListener('mousedown', e=>{ isTouch=false; onStart(e.clientY); e.preventDefault(); });
         window.addEventListener('mousemove', e=>{ if(startY!=null && !isTouch) onMove(e.clientY); });
         window.addEventListener('mouseup', onEnd);
 
-        // Also allow wheel up as a trigger
         swipeScreen.addEventListener('wheel', e=>{
           if(e.deltaY < -40 && currentIndex===1) goTo(2);
         });
-
       })();
 
-      // When entering final: open link and show emojis
       function enterFinal(){
-        // open new tab/window (may be blocked) — do it in response to user swipe, but here we still try
         const url = 'https://b23.tv/RtDSAPY';
         try{
           const w = window.open(url, '_blank');
           if(!w){
-            // popup blocked — show a hint (the open button is available)
             console.warn('Popup was blocked — please click the button to open the link.');
           }
         }catch(e){ console.warn('open failed', e); }
-
-        // show emoji overlay
-        emojiOverlay.style.display = 'block';
-        // ensure animations replay: reflow trick
-        const elems = emojiOverlay.querySelectorAll('.emoji');
-        elems.forEach(el=>{
-          el.style.transform='translate(-50%,-50%) scale(0)';
-          el.style.opacity='0';
-          // force reflow
-          void el.offsetWidth;
-        });
-        // small delay then let CSS animations run
-        setTimeout(()=>{
-          elems.forEach(el=>el.style.transform='translate(-50%,-50%) scale(1)');
-        },50);
-
-        // after a while remove overlay pointerless but keep visible
-        setTimeout(()=>{
-          emojiOverlay.style.pointerEvents='none';
-        }, 1200);
       }
 
-      // Accessibility: allow Enter on password to submit (already handled). Focus first input.
       pwInput.focus();
-
-      // Optional: if user clicks the open button, also show overlay (in case popup was blocked)
-      document.getElementById('openBtn').addEventListener('click', function(){
-        emojiOverlay.style.display='block';
-      });
-
-      // For demo: allow pressing Escape to reset to start
       window.addEventListener('keydown', e=>{ if(e.key==='Escape'){ goTo(0); pwInput.focus(); } });
-
     })();
-  </script></body>
+  </script>
+</body>
 </html>
