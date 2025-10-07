@@ -1,171 +1,302 @@
-<!DOCTYPE html><html lang="zh-CN">
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Unlock Page</title>
+  <title>Stargate Access</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
+    /* --- 全局与根变量 --- */
+    :root {
+      --bg-color: #0a0a10;
+      --primary-accent: #8e44ad;
+      --secondary-accent: #00b4d8;
+      --glow-color: rgba(0, 180, 216, 0.7);
+      --text-color: #f0f0f0;
+      --glass-bg: rgba(20, 20, 30, 0.6);
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body, html { height: 100%; font-family: 'Poppins', sans-serif; overflow: hidden; background: #0e0e10; color: white; }/* 解锁界面 */
-.unlock-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background: linear-gradient(135deg, #2b1055, #7597de);
-  animation: fadeIn 1s ease-in-out;
-}
 
-.unlock-container input {
-  padding: 12px 18px;
-  border-radius: 25px;
-  border: none;
-  outline: none;
-  text-align: center;
-  font-size: 18px;
-  margin-top: 20px;
-  transition: transform 0.2s;
-}
+    body, html {
+      height: 100%;
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      overflow: hidden; /* 初始隐藏滚动条 */
+    }
 
-.unlock-container input:focus {
-  transform: scale(1.05);
-}
+    /* --- 星空背景 --- */
+    .star-bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: transparent;
+      overflow: hidden;
+      z-index: -1;
+    }
 
-button {
-  margin-top: 25px;
-  padding: 10px 24px;
-  border: none;
-  border-radius: 25px;
-  background: #00b4d8;
-  color: white;
-  font-size: 18px;
-  cursor: pointer;
-  transition: 0.3s;
-}
+    .star {
+      position: absolute;
+      background-color: white;
+      border-radius: 50%;
+      animation: twinkle 4s infinite ease-in-out;
+    }
 
-button:hover {
-  background: #0096c7;
-  transform: scale(1.05);
-}
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.3; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1); }
+    }
 
-/* 滑动界面 */
-.slide-container {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-  overflow-y: scroll;
-  scroll-snap-type: y mandatory;
-  -webkit-overflow-scrolling: touch;
-}
+    /* --- 解锁界面 --- */
+    .unlock-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      transition: opacity 0.8s ease-out;
+    }
 
-section {
-  width: 100%;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  font-size: 2em;
-  scroll-snap-align: start;
-  transition: all 0.8s ease;
-}
+    .unlock-box {
+      width: 90%;
+      max-width: 400px;
+      padding: 40px 30px;
+      background: var(--glass-bg);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      text-align: center;
+      animation: floatIn 1s ease-out;
+    }
+    
+    @keyframes floatIn {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 
-section:nth-child(1) { background: linear-gradient(135deg, #1f4037, #99f2c8); }
-section:nth-child(2) { background: linear-gradient(135deg, #373B44, #4286f4); }
-section:nth-child(3) { background: linear-gradient(135deg, #fc466b, #3f5efb); }
+    .unlock-box h1 {
+      font-size: 1.5em;
+      margin-bottom: 10px;
+      font-weight: 600;
+      letter-spacing: 2px;
+    }
 
-/* 动画 */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+    .unlock-box p {
+      font-size: 0.9em;
+      margin-bottom: 30px;
+      font-weight: 300;
+      opacity: 0.7;
+    }
 
-.shape {
-  position: absolute;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  animation: float 6s infinite ease-in-out;
-}
+    .unlock-box input {
+      width: 100%;
+      padding: 15px 20px;
+      border-radius: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      outline: none;
+      background: rgba(0, 0, 0, 0.2);
+      color: var(--text-color);
+      text-align: center;
+      font-size: 1.1em;
+      transition: all 0.3s ease;
+    }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-30px); }
-}
+    .unlock-box input:focus {
+      border-color: var(--secondary-accent);
+      box-shadow: 0 0 15px var(--glow-color);
+    }
+    
+    .unlock-box input::placeholder {
+        color: rgba(255,255,255,0.4);
+    }
 
-.floating { animation: float 4s infinite ease-in-out alternate; }
+    .unlock-box button {
+      margin-top: 30px;
+      padding: 12px 30px;
+      width: 100%;
+      border: none;
+      border-radius: 30px;
+      background: linear-gradient(45deg, var(--primary-accent), var(--secondary-accent));
+      color: white;
+      font-size: 1.1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 20px rgba(142, 68, 173, 0.5);
+    }
 
-/* 滑动提示 */
-.swipe-hint {
-  position: absolute;
-  bottom: 30px;
-  font-size: 16px;
-  opacity: 0.8;
-  animation: hint 1.2s infinite;
-}
+    .unlock-box button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 0 35px var(--glow-color);
+    }
+    
+    /* --- 滑动界面 --- */
+    .slide-container {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      -webkit-overflow-scrolling: touch;
+      opacity: 0;
+      transition: opacity 0.8s ease-in;
+    }
 
-@keyframes hint {
-  0%, 100% { transform: translateY(0); opacity: 0.8; }
-  50% { transform: translateY(8px); opacity: 0.4; }
-}
+    section {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      text-align: center;
+      scroll-snap-align: start;
+      padding: 20px;
+    }
+    
+    section h2 {
+        font-size: 2.5em;
+        font-weight: 600;
+        margin-bottom: 15px;
+        text-shadow: 0 0 15px var(--glow-color);
+    }
 
+    section p {
+        font-size: 1.2em;
+        font-weight: 300;
+        opacity: 0.8;
+    }
+    
+    /* 滑动提示 */
+    .swipe-hint {
+      position: absolute;
+      bottom: 40px;
+      color: rgba(255, 255, 255, 0.6);
+      animation: bounce 2s infinite;
+    }
+    .chevron {
+        display: block;
+        width: 20px;
+        height: 20px;
+        border-bottom: 2px solid;
+        border-right: 2px solid;
+        transform: rotate(45deg);
+        margin: 0 auto;
+    }
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+      }
+      40% {
+        transform: translateY(-15px);
+      }
+      60% {
+        transform: translateY(-8px);
+      }
+    }
   </style>
 </head>
 <body>
+
+  <div class="star-bg" id="star-bg"></div>
+
   <div class="unlock-container" id="unlock">
-    <h1>🔒 输入密码解锁</h1>
-    <input type="password" id="password" placeholder="输入密码...">
-    <button onclick="checkPassword()">解锁</button>
-  </div>  <div class="slide-container" id="slides" style="display:none;">
+    <div class="unlock-box">
+      <h1>Stargate Access</h1>
+      <p>Awaiting Access Key...</p>
+      <input type="password" id="password" placeholder="••••••••••••">
+      <button onclick="checkPassword()">Authorize</button>
+    </div>
+  </div>
+
+  <div class="slide-container" id="slides" style="display:none;">
     <section>
       <div>
-        <h2>欢迎来到第二界面</h2>
-        <p>这是一个带动画的炫酷界面 ✨</p>
+        <h2>认证通过</h2>
+        <p>密钥已被接受，星门序列启动。</p>
       </div>
-      <div class="swipe-hint">⬆️ 向上滑动继续</div>
-      <div class="shape" style="top:20%; left:10%;"></div>
-      <div class="shape" style="bottom:10%; right:15%; animation-delay:1s;"></div>
-      <div class="shape" style="top:50%; right:30%; animation-delay:2s;"></div>
-    </section><section>
-  <div>
-    <h2>第二页动画展示</h2>
-    <p>流畅的滑动与动态背景</p>
-  </div>
-  <div class="swipe-hint">⬆️ 向上滑动进入最后一页</div>
-  <div class="shape floating" style="top:40%; left:20%;"></div>
-  <div class="shape floating" style="bottom:20%; right:10%; animation-delay:1.5s;"></div>
-</section>
+      <div class="swipe-hint">
+        <span class="chevron"></span>
+      </div>
+    </section>
+    
+    <section>
+      <div>
+        <h2>航线规划</h2>
+        <p>正在计算跃迁坐标... 目标锁定。</p>
+      </div>
+      <div class="swipe-hint">
+        <span class="chevron"></span>
+      </div>
+    </section>
 
-<section id="final">
-  <div>
-    <h2>即将跳转...</h2>
-    <p>请稍候</p>
+    <section id="final">
+      <div>
+        <h2>跃迁开始</h2>
+        <p>正在穿越... 请站稳。</p>
+      </div>
+    </section>
   </div>
-</section>
 
-  </div>  <script>
+  <script>
+    // --- 动态星空 ---
+    const starBg = document.getElementById('star-bg');
+    for (let i = 0; i < 100; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        const size = Math.random() * 3;
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        star.style.top = `${Math.random() * 100}%`;
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.animationDelay = `${Math.random() * 4}s`;
+        star.style.animationDuration = `${2 + Math.random() * 3}s`;
+        starBg.appendChild(star);
+    }
+    
+    // --- 核心功能 (与原来保持一致) ---
+    const unlockContainer = document.getElementById('unlock');
+    const slidesContainer = document.getElementById('slides');
+
     function checkPassword() {
       const pwd = document.getElementById('password').value;
       if (pwd === 'xiaoyuniubi') {
-        document.getElementById('unlock').style.display = 'none';
-        document.getElementById('slides').style.display = 'block';
-        document.body.style.overflow = 'hidden';
-        document.getElementById('slides').scrollTop = 0;
+        // 使用透明度实现平滑过渡
+        unlockContainer.style.opacity = '0';
+        
+        setTimeout(() => {
+            unlockContainer.style.display = 'none';
+            slidesContainer.style.display = 'block';
+            document.body.style.overflow = 'auto'; // 显示滚动条
+            slidesContainer.scrollTop = 0;
+            // 延迟一点再设置透明度，确保display先生效
+            setTimeout(() => {
+                slidesContainer.style.opacity = '1';
+            }, 50);
+        }, 800); // 等待淡出动画结束
+
       } else {
         alert('密码错误！');
       }
     }
 
-    const slides = document.getElementById('slides');
-    slides.addEventListener('scroll', () => {
+    slidesContainer.addEventListener('scroll', () => {
       const finalSection = document.getElementById('final');
       const rect = finalSection.getBoundingClientRect();
-      if (rect.top < window.innerHeight / 1.5) {
-        setTimeout(() => {
-          window.location.href = 'https://b23.tv/RtDSAPY';
-        }, 1000);
+      // 当最后一页的顶部进入视窗的一半时触发
+      if (rect.top < window.innerHeight / 2) {
+        // 为防止重复触发，可以添加一个锁
+        if (!finalSection.hasAttribute('data-triggered')) {
+          finalSection.setAttribute('data-triggered', 'true');
+          setTimeout(() => {
+            window.location.href = 'https://b23.tv/RtDSAPY';
+          }, 1200); // 稍微延长一点时间，让用户看清文字
+        }
       }
     });
-  </script></body>
+  </script>
+</body>
 </html>
