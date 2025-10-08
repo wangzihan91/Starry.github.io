@@ -1,302 +1,499 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stargate Access</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-  <style>
-    /* --- 全局与根变量 --- */
-    :root {
-      --bg-color: #0a0a10;
-      --primary-accent: #8e44ad;
-      --secondary-accent: #00b4d8;
-      --glow-color: rgba(0, 180, 216, 0.7);
-      --text-color: #f0f0f0;
-      --glass-bg: rgba(20, 20, 30, 0.6);
-    }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>Unlock</title>
+<style>
+  :root{
+    --bg1: linear-gradient(135deg,#1f1c2c 0%,#928DAB 100%);
+    --accent: #ff6b81;
+    --glass: rgba(255,255,255,0.06);
+  }
+  html,body{height:100%;margin:0;font-family:Inter, "PingFang SC", "Microsoft Yahei", sans-serif;touch-action: none;overflow-x:hidden;}
+  .app {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg1);
+    position: relative;
+  }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+  .screen {
+    width: 90%;
+    max-width: 420px;
+    aspect-ratio: 9 / 16;
+    border-radius: 18px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.45);
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.08));
+    overflow: hidden;
+    position: relative;
+    backdrop-filter: blur(6px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
 
-    body, html {
-      height: 100%;
-      font-family: 'Poppins', sans-serif;
-      background: var(--bg-color);
-      color: var(--text-color);
-      overflow: hidden; /* 初始隐藏滚动条 */
-    }
+  .page{
+    width:100%;
+    height:100%;
+    position:absolute;
+    left:0; top:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    padding:28px;
+    transition: transform 450ms cubic-bezier(.2,.9,.2,1), opacity 300ms ease;
+    text-align: center;
+    box-sizing: border-box;
+    backdrop-filter: blur(4px); /* 启用页面高斯模糊 */
+    opacity: 1;
+  }
 
-    /* --- 星空背景 --- */
-    .star-bg {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: transparent;
-      overflow: hidden;
-      z-index: -1;
-    }
+  h1{color:#fff;margin:8px 0 6px;font-size:24px;}
+  p.sub{color:rgba(255,255,255,0.72);margin:0 0 18px;}
 
-    .star {
-      position: absolute;
-      background-color: white;
-      border-radius: 50%;
-      animation: twinkle 4s infinite ease-in-out;
-    }
+  .lockbox{
+    width:100%;
+    max-width:320px;
+    background:var(--glass);
+    border-radius:12px;
+    padding:18px;
+    box-shadow: inset 0 -8px 20px rgba(0,0,0,0.25);
+    display:flex;
+    gap:8px;
+    align-items:center;
+    justify-content: center;
+    backdrop-filter: blur(8px); /* 锁箱高斯模糊 */
+  }
+  input[type="password"], input[type="text"]{
+    flex:1;
+    background:transparent;border:0;outline:none;
+    color:#fff;font-size:18px;padding:8px 10px;
+    text-align: center;
+  }
+  button.unlock{
+    background:linear-gradient(90deg,#ff758c,#ff9a9e);
+    border:0;padding:10px 14px;border-radius:10px;color:#fff;font-weight:600;
+    cursor:pointer;box-shadow:0 6px 18px rgba(255,105,135,0.18);
+    transition:transform .2s;
+    white-space: nowrap;
+  }
+  button.unlock:hover{transform:scale(1.05);}
 
-    @keyframes twinkle {
-      0%, 100% { opacity: 0.3; transform: scale(0.8); }
-      50% { opacity: 1; transform: scale(1); }
-    }
+  .swipe-area{
+    width:100%;
+    height:100%;
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    padding-bottom:56px;
+    flex-direction:column;
+    gap:14px;
+    align-items: center;
+  }
+  .swipe-card{
+    width:86%;
+    max-width:320px;
+    border-radius:16px;
+    padding:18px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.05));
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    text-align:center;color:#fff;
+    backdrop-filter: blur(6px); /* 滑动卡片高斯模糊 */
+  }
+  .emoji-row{font-size: calc(24px + 1vw); margin:10px 0;}
+  .pattern {display:flex;gap:8px;justify-content:center;margin-top:12px;}
+  .shape{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 6px 18px rgba(0,0,0,0.25);}
+  .swipe-hint{color:rgba(255,255,255,0.8);font-size:14px;}
+  .swipe-track{margin-top:12px;height:14px;width:220px;border-radius:999px;background:rgba(255,255,255,0.06);position:relative;overflow:hidden; display: block; margin: 0 auto;}
+  .swipe-knob{position:absolute;left:6px;top:2px;width:40px;height:10px;border-radius:999px;background:linear-gradient(90deg,#ff7b9b,#ffb0b0);transition:transform 120ms linear;}
+  footer.small{position:absolute;left:12px;bottom:10px;color:rgba(255,255,255,0.18);font-size:12px;}
 
-    /* --- 解锁界面 --- */
-    .unlock-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      transition: opacity 0.8s ease-out;
-    }
+  /* 加载动画层 */
+  .loading-overlay {
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,0.8);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-size:18px;
+    backdrop-filter: blur(10px); /* 加强加载层高斯模糊 */
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .3s ease;
+    z-index: 10;
+  }
+  .loading-overlay.active {
+    opacity:1;
+    pointer-events:auto;
+  }
+  .spinner {
+    width:48px;
+    height:48px;
+    border:4px solid rgba(255,255,255,0.3);
+    border-top-color:#fff;
+    border-radius:50%;
+    animation:spin 1s linear infinite;
+    margin-bottom:16px;
+  }
+  @keyframes spin { to {transform:rotate(360deg);} }
 
-    .unlock-box {
-      width: 90%;
-      max-width: 400px;
-      padding: 40px 30px;
-      background: var(--glass-bg);
-      border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      text-align: center;
-      animation: floatIn 1s ease-out;
-    }
-    
-    @keyframes floatIn {
-        from { opacity: 0; transform: translateY(30px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+  .progress {
+    width:200px;
+    height:10px;
+    background:rgba(255,255,255,0.2);
+    border-radius:999px;
+    overflow:hidden;
+    margin-top:14px;
+  }
+  .progress-bar {
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#ff7b9b,#ffb0b0);
+    border-radius:999px;
+    transition:width .2s ease;
+  }
 
-    .unlock-box h1 {
-      font-size: 1.5em;
-      margin-bottom: 10px;
-      font-weight: 600;
-      letter-spacing: 2px;
-    }
+  /* 自定义弹窗 */
+  .modal{
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,0.85);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .3s;
+    z-index:99;
+    flex-direction:column;
+    backdrop-filter: blur(12px); /* 模态框高斯模糊 */
+  }
+  .modal.active{
+    opacity:1;
+    pointer-events:auto;
+  }
+  .modal-content{
+    background:linear-gradient(180deg,#ff758c,#ff9a9e);
+    padding:28px 36px;
+    border-radius:16px;
+    text-align:center;
+    color:#fff;
+    box-shadow:0 8px 24px rgba(0,0,0,0.4);
+    max-width: 300px;
+  }
+  .modal-content button{
+    margin-top:16px;
+    padding:10px 20px;
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:600;
+    background:#fff;
+    color:#ff758c;
+    transition:transform .2s;
+  }
+  .modal-content button:hover{transform:scale(1.05);}
 
-    .unlock-box p {
-      font-size: 0.9em;
-      margin-bottom: 30px;
-      font-weight: 300;
-      opacity: 0.7;
-    }
+  /* 人机验证样式 */
+  .captcha-box {
+    background: var(--glass);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    margin-top: 10px;
+    width: 86%;
+    max-width: 320px;
+    backdrop-filter: blur(8px); /* 验证码框高斯模糊 */
+  }
+  .captcha-question {
+    font-size: 20px;
+    color: #fff;
+    margin-bottom: 15px;
+  }
+  .captcha-input {
+    width: 60%;
+    padding: 8px 12px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 8px;
+    color: #fff;
+    text-align: center;
+    font-size: 18px;
+  }
+  .captcha-input::placeholder {
+    color: rgba(255,255,255,0.5);
+  }
+  .captcha-btn {
+    background: linear-gradient(90deg, #ff758c, #ff9a9e);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    box-shadow: 0 4px 12px rgba(255,105,135,0.2);
+    transition: transform 0.2s;
+  }
+  .captcha-btn:hover {
+    transform: scale(1.05);
+  }
+  .error-msg {
+    color: #ff6b81;
+    font-size: 14px;
+    margin-top: 8px;
+    display: none;
+  }
 
-    .unlock-box input {
-      width: 100%;
-      padding: 15px 20px;
-      border-radius: 30px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      outline: none;
-      background: rgba(0, 0, 0, 0.2);
-      color: var(--text-color);
-      text-align: center;
-      font-size: 1.1em;
-      transition: all 0.3s ease;
-    }
-
-    .unlock-box input:focus {
-      border-color: var(--secondary-accent);
-      box-shadow: 0 0 15px var(--glow-color);
-    }
-    
-    .unlock-box input::placeholder {
-        color: rgba(255,255,255,0.4);
-    }
-
-    .unlock-box button {
-      margin-top: 30px;
-      padding: 12px 30px;
-      width: 100%;
-      border: none;
-      border-radius: 30px;
-      background: linear-gradient(45deg, var(--primary-accent), var(--secondary-accent));
-      color: white;
-      font-size: 1.1em;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 0 20px rgba(142, 68, 173, 0.5);
-    }
-
-    .unlock-box button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 0 35px var(--glow-color);
-    }
-    
-    /* --- 滑动界面 --- */
-    .slide-container {
-      position: relative;
-      width: 100%;
-      height: 100vh;
-      overflow-y: scroll;
-      scroll-snap-type: y mandatory;
-      -webkit-overflow-scrolling: touch;
-      opacity: 0;
-      transition: opacity 0.8s ease-in;
-    }
-
-    section {
-      width: 100%;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      text-align: center;
-      scroll-snap-align: start;
-      padding: 20px;
-    }
-    
-    section h2 {
-        font-size: 2.5em;
-        font-weight: 600;
-        margin-bottom: 15px;
-        text-shadow: 0 0 15px var(--glow-color);
-    }
-
-    section p {
-        font-size: 1.2em;
-        font-weight: 300;
-        opacity: 0.8;
-    }
-    
-    /* 滑动提示 */
-    .swipe-hint {
-      position: absolute;
-      bottom: 40px;
-      color: rgba(255, 255, 255, 0.6);
-      animation: bounce 2s infinite;
-    }
-    .chevron {
-        display: block;
-        width: 20px;
-        height: 20px;
-        border-bottom: 2px solid;
-        border-right: 2px solid;
-        transform: rotate(45deg);
-        margin: 0 auto;
-    }
-    @keyframes bounce {
-      0%, 20%, 50%, 80%, 100% {
-        transform: translateY(0);
-      }
-      40% {
-        transform: translateY(-15px);
-      }
-      60% {
-        transform: translateY(-8px);
-      }
-    }
-  </style>
+  /* 额外优化：防止倾斜和确保居中 */
+  @media (orientation: portrait) {
+    .app { align-items: center; }
+    .screen { margin: 0 auto; }
+  }
+  @media (max-width: 480px) {
+    .page { padding: 20px; }
+    .lockbox, .swipe-card { width: 100%; max-width: none; }
+  }
+</style>
 </head>
 <body>
+<div class="app">
+  <div class="screen" id="screen">
+    <!-- PAGE 0 -->
+    <div class="page" id="page-0" style="z-index:3; opacity: 1;">
+      <div style="text-align:center; width: 100%;">
+        <div style="width:68px;height:68px;border-radius:18px;background:linear-gradient(135deg,#ffd1dc,#ff7b9b);display:inline-flex;align-items:center;justify-content:center;font-size:28px;color:#330; margin: 0 auto 16px;">🔒</div>
+        <h1>私密解锁</h1>
+        <p class="sub">请输入密码继续</p>
+      </div>
+      <div class="lockbox">
+        <input id="pwd" type="password" placeholder="请输入密码" autocomplete="off" />
+        <button class="unlock" id="unlockBtn">解锁</button>
+      </div>
+      <footer class="small">体验演示 · 保密界面</footer>
+    </div>
 
-  <div class="star-bg" id="star-bg"></div>
+    <!-- PAGE 1 -->
+    <div class="page" id="page-1" style="z-index:2; transform: translateY(100%); opacity: 0;">
+      <div class="swipe-area" id="swipeArea">
+        <div class="swipe-card">
+          <h1>成人专区</h1>
+          <p class="sub">继续请向上滑动</p>
+          <div class="emoji-row">🔞 😋 😍 🤩 😇</div>
+          <div class="pattern">
+            <div class="shape">💋</div>
+            <div class="shape">♡</div>
+            <div class="shape">✨</div>
+            <div class="shape">💃</div>
+          </div>
+          <div class="swipe-hint">向上滑动以查看内容</div>
+          <div class="swipe-track" id="swipeTrack"><div class="swipe-knob" id="swipeKnob"></div></div>
+        </div>
+      </div>
+    </div>
 
-  <div class="unlock-container" id="unlock">
-    <div class="unlock-box">
-      <h1>Stargate Access</h1>
-      <p>Awaiting Access Key...</p>
-      <input type="password" id="password" placeholder="••••••••••••">
-      <button onclick="checkPassword()">Authorize</button>
+    <!-- 人机验证模态框 -->
+    <div class="modal" id="captchaModal">
+      <div class="modal-content">
+        <h2>人机验证</h2>
+        <p class="sub">请回答以下问题以确认您是人类</p>
+        <div class="captcha-box">
+          <div class="captcha-question" id="captchaQuestion"></div>
+          <input type="text" id="captchaInput" class="captcha-input" placeholder="输入答案" autocomplete="off" />
+          <div class="error-msg" id="errorMsg">答案错误，请重试！</div>
+          <button class="captcha-btn" id="captchaBtn">验证</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 加载层 -->
+    <div class="loading-overlay" id="loading">
+      <div class="spinner"></div>
+      <div id="loadingText">正在加载内容，请稍候...</div>
+      <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+    </div>
+
+    <!-- 自定义弹窗 -->
+    <div class="modal" id="trickModal">
+      <div class="modal-content">
+        <p>请点击下面链接以查看每日热门影片</p>
+        <button id="goLink">前往链接</button>
+      </div>
     </div>
   </div>
+</div>
 
-  <div class="slide-container" id="slides" style="display:none;">
-    <section>
-      <div>
-        <h2>认证通过</h2>
-        <p>密钥已被接受，星门序列启动。</p>
-      </div>
-      <div class="swipe-hint">
-        <span class="chevron"></span>
-      </div>
-    </section>
-    
-    <section>
-      <div>
-        <h2>航线规划</h2>
-        <p>正在计算跃迁坐标... 目标锁定。</p>
-      </div>
-      <div class="swipe-hint">
-        <span class="chevron"></span>
-      </div>
-    </section>
+<script>
+(function(){
+  const PASSWORD = "shaoyuniubi";
+  const pages = [document.getElementById('page-0'), document.getElementById('page-1')];
+  const loading = document.getElementById('loading');
+  const progressBar = document.getElementById('progressBar');
+  const loadingText = document.getElementById('loadingText');
+  const modal = document.getElementById('trickModal');
+  const captchaModal = document.getElementById('captchaModal');
+  const goLinkBtn = document.getElementById('goLink');
+  let index = 0;
+  let captchaCorrect = false; // 标记人机验证是否通过
 
-    <section id="final">
-      <div>
-        <h2>跃迁开始</h2>
-        <p>正在穿越... 请站稳。</p>
-      </div>
-    </section>
-  </div>
-
-  <script>
-    // --- 动态星空 ---
-    const starBg = document.getElementById('star-bg');
-    for (let i = 0; i < 100; i++) {
-        const star = document.createElement('div');
-        star.className = 'star';
-        const size = Math.random() * 3;
-        star.style.width = `${size}px`;
-        star.style.height = `${size}px`;
-        star.style.top = `${Math.random() * 100}%`;
-        star.style.left = `${Math.random() * 100}%`;
-        star.style.animationDelay = `${Math.random() * 4}s`;
-        star.style.animationDuration = `${2 + Math.random() * 3}s`;
-        starBg.appendChild(star);
+  // 生成随机数学题 - 更难版本
+  function generateCaptcha() {
+    const num1 = Math.floor(Math.random() * 20) + 1;
+    const num2 = Math.floor(Math.random() * 20) + 1;
+    const operators = ['+', '-', '*', '/'];
+    const op = operators[Math.floor(Math.random() * operators.length)];
+    let answer;
+    let question;
+    switch(op) {
+      case '+': 
+        answer = num1 + num2; 
+        question = `${num1} + ${num2} = ?`; 
+        break;
+      case '-': 
+        if (num1 < num2) [num1, num2] = [num2, num1]; // 确保正数
+        answer = num1 - num2; 
+        question = `${num1} - ${num2} = ?`; 
+        break;
+      case '*': 
+        answer = num1 * num2; 
+        question = `${num1} × ${num2} = ?`; 
+        break;
+      case '/': 
+        // 确保可整除
+        const divisor = Math.floor(Math.random() * 10) + 1;
+        const quotient = Math.floor(Math.random() * 10) + 1;
+        num1 = divisor * quotient;
+        num2 = divisor;
+        answer = quotient;
+        question = `${num1} ÷ ${num2} = ?`; 
+        break;
     }
-    
-    // --- 核心功能 (与原来保持一致) ---
-    const unlockContainer = document.getElementById('unlock');
-    const slidesContainer = document.getElementById('slides');
+    document.getElementById('captchaQuestion').textContent = question;
+    return answer.toString();
+  }
 
-    function checkPassword() {
-      const pwd = document.getElementById('password').value;
-      if (pwd === 'xiaoyuniubi') {
-        // 使用透明度实现平滑过渡
-        unlockContainer.style.opacity = '0';
-        
-        setTimeout(() => {
-            unlockContainer.style.display = 'none';
-            slidesContainer.style.display = 'block';
-            document.body.style.overflow = 'auto'; // 显示滚动条
-            slidesContainer.scrollTop = 0;
-            // 延迟一点再设置透明度，确保display先生效
-            setTimeout(() => {
-                slidesContainer.style.opacity = '1';
-            }, 50);
-        }, 800); // 等待淡出动画结束
+  // 人机验证事件
+  const captchaBtn = document.getElementById('captchaBtn');
+  const captchaInput = document.getElementById('captchaInput');
+  const errorMsg = document.getElementById('errorMsg');
+  let correctAnswer = generateCaptcha();
 
+  captchaBtn.addEventListener('click', () => {
+    const userAnswer = captchaInput.value.trim();
+    if (userAnswer === correctAnswer) {
+      captchaCorrect = true;
+      captchaModal.classList.remove('active');
+      triggerTrick(); // 直接触发加载
+    } else {
+      errorMsg.style.display = 'block';
+      captchaInput.value = '';
+      correctAnswer = generateCaptcha(); // 重新生成题目
+      setTimeout(() => { errorMsg.style.display = 'none'; }, 2000);
+    }
+  });
+
+  captchaInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') captchaBtn.click();
+  });
+
+  function updatePages() {
+    pages.forEach((p,i)=>{
+      if (i === index) {
+        p.style.zIndex = 3;
+        p.style.opacity = 1;
       } else {
-        alert('密码错误！');
+        p.style.zIndex = 2;
+        p.style.opacity = 0;
       }
-    }
+      p.style.transform = `translateY(${(i - index) * 100}%)`;
+    });
+  }
 
-    slidesContainer.addEventListener('scroll', () => {
-      const finalSection = document.getElementById('final');
-      const rect = finalSection.getBoundingClientRect();
-      // 当最后一页的顶部进入视窗的一半时触发
-      if (rect.top < window.innerHeight / 2) {
-        // 为防止重复触发，可以添加一个锁
-        if (!finalSection.hasAttribute('data-triggered')) {
-          finalSection.setAttribute('data-triggered', 'true');
-          setTimeout(() => {
-            window.location.href = 'https://b23.tv/RtDSAPY';
-          }, 1200); // 稍微延长一点时间，让用户看清文字
+  const unlockBtn = document.getElementById('unlockBtn');
+  const pwdInput = document.getElementById('pwd');
+  unlockBtn.addEventListener('click', tryUnlock);
+  pwdInput.addEventListener('keydown', e=>{ if(e.key==='Enter') tryUnlock(); });
+
+  function tryUnlock(){
+    const inputValue = pwdInput.value.trim(); // 添加 trim 以去除空格
+    if(inputValue === PASSWORD){
+      index=1; 
+      updatePages(); 
+      pwdInput.value = "";
+      console.log("解锁成功，切换页面"); // 添加调试日志
+    } else {
+      alert("密码错误！");
+      console.log("密码错误: " + inputValue); // 添加调试日志
+    }
+  }
+
+  const swipeArea = document.getElementById('swipeArea');
+  const swipeKnob = document.getElementById('swipeKnob');
+  const swipeTrack = document.getElementById('swipeTrack');
+  let startY=null,swipeActive=false,mouseDown=false;
+
+  function handleSwipe(dy){
+    if(dy>0){
+      const trackW=swipeTrack.clientWidth-52;
+      let prog = Math.min(1, dy/(swipeArea.clientHeight*0.4));
+      swipeKnob.style.transform=`translateX(${prog*trackW}px)`;
+      if(prog>=1){
+        swipeActive=false;
+        mouseDown=false;
+        if (captchaCorrect) {
+          triggerTrick();
+        } else {
+          captchaModal.classList.add('active'); // 显示人机验证
         }
       }
-    });
-  </script>
+    }
+  }
+
+  swipeArea.addEventListener('touchstart',e=>{startY=e.touches[0].clientY;swipeActive=true;});
+  swipeArea.addEventListener('touchmove',e=>{
+    if(!swipeActive||startY===null)return;
+    handleSwipe(startY-e.touches[0].clientY);
+  });
+  swipeArea.addEventListener('touchend',()=>{swipeKnob.style.transform="translateX(0)";swipeActive=false;startY=null;});
+  swipeArea.addEventListener('mousedown',e=>{mouseDown=true;startY=e.clientY;swipeActive=true;});
+  window.addEventListener('mousemove',e=>{
+    if(!mouseDown||!swipeActive)return;
+    handleSwipe(startY-e.clientY);
+  });
+  window.addEventListener('mouseup',()=>{mouseDown=false;swipeKnob.style.transform="translateX(0)";});
+
+  function triggerTrick(){
+    loading.classList.add('active');
+    let progress = 0;
+    const tips = ["解析中…","加载资源…","即将完成…"];
+    const timer = setInterval(()=>{
+      progress += Math.random()*10 + 5;
+      if(progress>=100){
+        progress=100;
+        clearInterval(timer);
+        setTimeout(()=>{
+          loading.classList.remove('active');
+          modal.classList.add('active');
+        },500);
+      }
+      progressBar.style.width = progress + "%";
+      loadingText.textContent = `${tips[Math.floor(Math.random()*tips.length)]} ${Math.floor(progress)}%`;
+    },1000); // 延长间隔至1秒，使总时间约10秒
+  }
+
+  goLinkBtn.addEventListener('click',()=>{window.location.href="https://b23.tv/RtDSAPY";});
+
+  updatePages();
+})();
+</script>
 </body>
 </html>
