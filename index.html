@@ -1,499 +1,686 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-<title>Unlock</title>
-<style>
-  :root{
-    --bg1: linear-gradient(135deg,#1f1c2c 0%,#928DAB 100%);
-    --accent: #ff6b81;
-    --glass: rgba(255,255,255,0.06);
-  }
-  html,body{height:100%;margin:0;font-family:Inter, "PingFang SC", "Microsoft Yahei", sans-serif;touch-action: none;overflow-x:hidden;}
-  .app {
-    height: 100vh;
-    width: 100vw;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg1);
-    position: relative;
-  }
-
-  .screen {
-    width: 90%;
-    max-width: 420px;
-    aspect-ratio: 9 / 16;
-    border-radius: 18px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.45);
-    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.08));
-    overflow: hidden;
-    position: relative;
-    backdrop-filter: blur(6px);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .page{
-    width:100%;
-    height:100%;
-    position:absolute;
-    left:0; top:0;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-direction:column;
-    padding:28px;
-    transition: transform 450ms cubic-bezier(.2,.9,.2,1), opacity 300ms ease;
-    text-align: center;
-    box-sizing: border-box;
-    backdrop-filter: blur(4px); /* 启用页面高斯模糊 */
-    opacity: 1;
-  }
-
-  h1{color:#fff;margin:8px 0 6px;font-size:24px;}
-  p.sub{color:rgba(255,255,255,0.72);margin:0 0 18px;}
-
-  .lockbox{
-    width:100%;
-    max-width:320px;
-    background:var(--glass);
-    border-radius:12px;
-    padding:18px;
-    box-shadow: inset 0 -8px 20px rgba(0,0,0,0.25);
-    display:flex;
-    gap:8px;
-    align-items:center;
-    justify-content: center;
-    backdrop-filter: blur(8px); /* 锁箱高斯模糊 */
-  }
-  input[type="password"], input[type="text"]{
-    flex:1;
-    background:transparent;border:0;outline:none;
-    color:#fff;font-size:18px;padding:8px 10px;
-    text-align: center;
-  }
-  button.unlock{
-    background:linear-gradient(90deg,#ff758c,#ff9a9e);
-    border:0;padding:10px 14px;border-radius:10px;color:#fff;font-weight:600;
-    cursor:pointer;box-shadow:0 6px 18px rgba(255,105,135,0.18);
-    transition:transform .2s;
-    white-space: nowrap;
-  }
-  button.unlock:hover{transform:scale(1.05);}
-
-  .swipe-area{
-    width:100%;
-    height:100%;
-    display:flex;
-    align-items:flex-end;
-    justify-content:center;
-    padding-bottom:56px;
-    flex-direction:column;
-    gap:14px;
-    align-items: center;
-  }
-  .swipe-card{
-    width:86%;
-    max-width:320px;
-    border-radius:16px;
-    padding:18px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.05));
-    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-    text-align:center;color:#fff;
-    backdrop-filter: blur(6px); /* 滑动卡片高斯模糊 */
-  }
-  .emoji-row{font-size: calc(24px + 1vw); margin:10px 0;}
-  .pattern {display:flex;gap:8px;justify-content:center;margin-top:12px;}
-  .shape{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 6px 18px rgba(0,0,0,0.25);}
-  .swipe-hint{color:rgba(255,255,255,0.8);font-size:14px;}
-  .swipe-track{margin-top:12px;height:14px;width:220px;border-radius:999px;background:rgba(255,255,255,0.06);position:relative;overflow:hidden; display: block; margin: 0 auto;}
-  .swipe-knob{position:absolute;left:6px;top:2px;width:40px;height:10px;border-radius:999px;background:linear-gradient(90deg,#ff7b9b,#ffb0b0);transition:transform 120ms linear;}
-  footer.small{position:absolute;left:12px;bottom:10px;color:rgba(255,255,255,0.18);font-size:12px;}
-
-  /* 加载动画层 */
-  .loading-overlay {
-    position:absolute;
-    inset:0;
-    background:rgba(0,0,0,0.8);
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    color:#fff;
-    font-size:18px;
-    backdrop-filter: blur(10px); /* 加强加载层高斯模糊 */
-    opacity:0;
-    pointer-events:none;
-    transition:opacity .3s ease;
-    z-index: 10;
-  }
-  .loading-overlay.active {
-    opacity:1;
-    pointer-events:auto;
-  }
-  .spinner {
-    width:48px;
-    height:48px;
-    border:4px solid rgba(255,255,255,0.3);
-    border-top-color:#fff;
-    border-radius:50%;
-    animation:spin 1s linear infinite;
-    margin-bottom:16px;
-  }
-  @keyframes spin { to {transform:rotate(360deg);} }
-
-  .progress {
-    width:200px;
-    height:10px;
-    background:rgba(255,255,255,0.2);
-    border-radius:999px;
-    overflow:hidden;
-    margin-top:14px;
-  }
-  .progress-bar {
-    height:100%;
-    width:0%;
-    background:linear-gradient(90deg,#ff7b9b,#ffb0b0);
-    border-radius:999px;
-    transition:width .2s ease;
-  }
-
-  /* 自定义弹窗 */
-  .modal{
-    position:absolute;
-    inset:0;
-    background:rgba(0,0,0,0.85);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    opacity:0;
-    pointer-events:none;
-    transition:opacity .3s;
-    z-index:99;
-    flex-direction:column;
-    backdrop-filter: blur(12px); /* 模态框高斯模糊 */
-  }
-  .modal.active{
-    opacity:1;
-    pointer-events:auto;
-  }
-  .modal-content{
-    background:linear-gradient(180deg,#ff758c,#ff9a9e);
-    padding:28px 36px;
-    border-radius:16px;
-    text-align:center;
-    color:#fff;
-    box-shadow:0 8px 24px rgba(0,0,0,0.4);
-    max-width: 300px;
-  }
-  .modal-content button{
-    margin-top:16px;
-    padding:10px 20px;
-    border:none;
-    border-radius:12px;
-    cursor:pointer;
-    font-weight:600;
-    background:#fff;
-    color:#ff758c;
-    transition:transform .2s;
-  }
-  .modal-content button:hover{transform:scale(1.05);}
-
-  /* 人机验证样式 */
-  .captcha-box {
-    background: var(--glass);
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    margin-top: 10px;
-    width: 86%;
-    max-width: 320px;
-    backdrop-filter: blur(8px); /* 验证码框高斯模糊 */
-  }
-  .captcha-question {
-    font-size: 20px;
-    color: #fff;
-    margin-bottom: 15px;
-  }
-  .captcha-input {
-    width: 60%;
-    padding: 8px 12px;
-    background: transparent;
-    border: 1px solid rgba(255,255,255,0.3);
-    border-radius: 8px;
-    color: #fff;
-    text-align: center;
-    font-size: 18px;
-  }
-  .captcha-input::placeholder {
-    color: rgba(255,255,255,0.5);
-  }
-  .captcha-btn {
-    background: linear-gradient(90deg, #ff758c, #ff9a9e);
-    border: none;
-    padding: 10px 20px;
-    border-radius: 10px;
-    color: #fff;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 10px;
-    box-shadow: 0 4px 12px rgba(255,105,135,0.2);
-    transition: transform 0.2s;
-  }
-  .captcha-btn:hover {
-    transform: scale(1.05);
-  }
-  .error-msg {
-    color: #ff6b81;
-    font-size: 14px;
-    margin-top: 8px;
-    display: none;
-  }
-
-  /* 额外优化：防止倾斜和确保居中 */
-  @media (orientation: portrait) {
-    .app { align-items: center; }
-    .screen { margin: 0 auto; }
-  }
-  @media (max-width: 480px) {
-    .page { padding: 20px; }
-    .lockbox, .swipe-card { width: 100%; max-width: none; }
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>私密解锁系统</title>
+    <style>
+        :root {
+            --bg1: linear-gradient(135deg, #1f1c2c 0%, #928DAB 100%);
+            --accent: #ff6b81;
+            --glass: rgba(255, 255, 255, 0.06);
+            --success: #4CAF50;
+            --error: #f44336;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            height: 100%;
+            font-family: 'Inter', 'PingFang SC', 'Microsoft Yahei', sans-serif;
+            touch-action: none;
+            overflow: hidden;
+            background: var(--bg1);
+        }
+        
+        .app {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .screen {
+            width: 90%;
+            max-width: 420px;
+            aspect-ratio: 9 / 16;
+            border-radius: 18px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.08));
+            overflow: hidden;
+            position: relative;
+            backdrop-filter: blur(6px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .page {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            left: 0;
+            top: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 28px;
+            transition: transform 450ms cubic-bezier(.2, .9, .2, 1), opacity 300ms ease;
+            text-align: center;
+            backdrop-filter: blur(4px);
+            opacity: 1;
+        }
+        
+        h1 {
+            color: #fff;
+            margin: 8px 0 6px;
+            font-size: 24px;
+        }
+        
+        p.sub {
+            color: rgba(255, 255, 255, 0.72);
+            margin: 0 0 18px;
+        }
+        
+        .lockbox {
+            width: 100%;
+            max-width: 320px;
+            background: var(--glass);
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: inset 0 -8px 20px rgba(0, 0, 0, 0.25);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+        }
+        
+        input[type="password"], input[type="text"] {
+            flex: 1;
+            background: transparent;
+            border: 0;
+            outline: none;
+            color: #fff;
+            font-size: 18px;
+            padding: 8px 10px;
+            text-align: center;
+        }
+        
+        button.unlock {
+            background: linear-gradient(90deg, #ff758c, #ff9a9e);
+            border: 0;
+            padding: 10px 14px;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(255, 105, 135, 0.18);
+            transition: transform .2s;
+            white-space: nowrap;
+        }
+        
+        button.unlock:hover {
+            transform: scale(1.05);
+        }
+        
+        button.unlock:disabled {
+            background: rgba(255, 255, 255, 0.2);
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .swipe-area {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 56px;
+            flex-direction: column;
+            gap: 14px;
+            align-items: center;
+        }
+        
+        .swipe-card {
+            width: 86%;
+            max-width: 320px;
+            border-radius: 16px;
+            padding: 18px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.05));
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+            text-align: center;
+            color: #fff;
+            backdrop-filter: blur(6px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .swipe-card.active {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(255, 105, 135, 0.3);
+        }
+        
+        .emoji-row {
+            font-size: calc(24px + 1vw);
+            margin: 10px 0;
+        }
+        
+        .pattern {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 12px;
+        }
+        
+        .shape {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+        }
+        
+        .swipe-hint {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+        
+        .swipe-track {
+            margin-top: 12px;
+            height: 14px;
+            width: 220px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+            position: relative;
+            overflow: hidden;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .swipe-knob {
+            position: absolute;
+            left: 6px;
+            top: 2px;
+            width: 40px;
+            height: 10px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #ff7b9b, #ffb0b0);
+            transition: transform 120ms linear;
+        }
+        
+        footer.small {
+            position: absolute;
+            left: 12px;
+            bottom: 10px;
+            color: rgba(255, 255, 255, 0.18);
+            font-size: 12px;
+        }
+        
+        .error-message {
+            color: var(--error);
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 18px;
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .3s ease;
+            z-index: 10;
+        }
+        
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .progress {
+            width: 200px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 999px;
+            overflow: hidden;
+            margin-top: 14px;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff7b9b, #ffb0b0);
+            border-radius: 999px;
+            transition: width .2s ease;
+        }
+        
+        .modal {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .3s;
+            z-index: 99;
+            flex-direction: column;
+            backdrop-filter: blur(12px);
+        }
+        
+        .modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .modal-content {
+            background: linear-gradient(180deg, #ff758c, #ff9a9e);
+            padding: 28px 36px;
+            border-radius: 16px;
+            text-align: center;
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            max-width: 300px;
+        }
+        
+        .modal-content button {
+            margin-top: 16px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            background: #fff;
+            color: #ff758c;
+            transition: transform .2s;
+        }
+        
+        .modal-content button:hover {
+            transform: scale(1.05);
+        }
+        
+        .captcha-box {
+            background: var(--glass);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 10px;
+            width: 86%;
+            max-width: 320px;
+            backdrop-filter: blur(8px);
+        }
+        
+        .captcha-question {
+            font-size: 20px;
+            color: #fff;
+            margin-bottom: 15px;
+        }
+        
+        .captcha-input {
+            width: 60%;
+            padding: 8px 12px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            color: #fff;
+            text-align: center;
+            font-size: 18px;
+        }
+        
+        .captcha-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .captcha-btn {
+            background: linear-gradient(90deg, #ff758c, #ff9a9e);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 4px 12px rgba(255, 105, 135, 0.2);
+            transition: transform 0.2s;
+        }
+        
+        .captcha-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .error-msg {
+            color: var(--error);
+            font-size: 14px;
+            margin-top: 8px;
+            display: none;
+        }
+        
+        @media (orientation: portrait) {
+            .app {
+                align-items: center;
+            }
+            .screen {
+                margin: 0 auto;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .page {
+                padding: 20px;
+            }
+            .lockbox, .swipe-card {
+                width: 100%;
+                max-width: none;
+            }
+        }
+        
+        .password-strength {
+            width: 100%;
+            max-width: 320px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .strength-bar {
+            height: 100%;
+            width: 0%;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+        
+        .attempts-counter {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+            margin-top: 8px;
+            display: none;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ff6b81;
+            opacity: 0;
+        }
+        
+        /* 修改：在线人数统计样式 */
+        .user-counter {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(0, 0, 0, 0.4);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-counter .icon {
+            margin-right: 5px;
+            font-size: 14px;
+        }
+        
+        .user-counter .count {
+            color: #4CAF50;
+            font-weight: bold;
+            margin: 0 3px;
+        }
+        
+        .online-indicator {
+            width: 8px;
+            height: 8px;
+            background: #4CAF50;
+            border-radius: 50%;
+            margin-right: 5px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+        
+        /* 新增：注册界面样式 */
+        .register-modal {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .3s;
+            z-index: 99;
+            flex-direction: column;
+            backdrop-filter: blur(12px);
+        }
+        
+        .register-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .register-content {
+            background: linear-gradient(180deg, #ff758c, #ff9a9e);
+            padding: 28px 36px;
+            border-radius: 16px;
+            text-align: center;
+            color: #fff;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            max-width: 320px;
+            width: 90%;
+        }
+        
+        .register-content h2 {
+            margin-bottom: 10px;
+        }
+        
+        .register-content p {
+            margin-bottom: 20px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+        }
+        
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .requirement {
+            font-size: 12px;
+            margin-top: 4px;
+            opacity: 0.8;
+        }
+        
+        .register-btn {
+            background: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            color: #ff758c;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+        
+        .register-btn:hover {
+            transform: scale(1.03);
+        }
+        
+        .countdown-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 18px;
+            backdrop-filter: blur(12px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .3s ease;
+            z-index: 100;
+        }
+        
+        .countdown-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .countdown-text {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .countdown-timer {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #ff9a9e;
+        }
+        
+        .countdown-progress {
+            width: 80%;
+            max-width: 300px;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .countdown-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff7b9b, #ffb0b0);
+            border-radius: 10px;
+            transition: width 1s linear;
+        }
+    </style>
 </head>
 <body>
-<div class="app">
-  <div class="screen" id="screen">
-    <!-- PAGE 0 -->
-    <div class="page" id="page-0" style="z-index:3; opacity: 1;">
-      <div style="text-align:center; width: 100%;">
-        <div style="width:68px;height:68px;border-radius:18px;background:linear-gradient(135deg,#ffd1dc,#ff7b9b);display:inline-flex;align-items:center;justify-content:center;font-size:28px;color:#330; margin: 0 auto 16px;">🔒</div>
-        <h1>私密解锁</h1>
-        <p class="sub">请输入密码继续</p>
-      </div>
-      <div class="lockbox">
-        <input id="pwd" type="password" placeholder="请输入密码" autocomplete="off" />
-        <button class="unlock" id="unlockBtn">解锁</button>
-      </div>
-      <footer class="small">体验演示 · 保密界面</footer>
-    </div>
-
-    <!-- PAGE 1 -->
-    <div class="page" id="page-1" style="z-index:2; transform: translateY(100%); opacity: 0;">
-      <div class="swipe-area" id="swipeArea">
-        <div class="swipe-card">
-          <h1>成人专区</h1>
-          <p class="sub">继续请向上滑动</p>
-          <div class="emoji-row">🔞 😋 😍 🤩 😇</div>
-          <div class="pattern">
-            <div class="shape">💋</div>
-            <div class="shape">♡</div>
-            <div class="shape">✨</div>
-            <div class="shape">💃</div>
-          </div>
-          <div class="swipe-hint">向上滑动以查看内容</div>
-          <div class="swipe-track" id="swipeTrack"><div class="swipe-knob" id="swipeKnob"></div></div>
+    <div class="app">
+        <!-- 修改：在线人数统计 -->
+        <div class="user-counter">
+            <div class="online-indicator"></div>
+            <span class="icon">👥</span> 在线: <span class="count" id="userCount">0</span>
         </div>
-      </div>
-    </div>
+        
+        <div class="screen" id="screen">
+            <!-- PAGE 0 -->
+            <div class="page" id="page-0" style="z-index:3; opacity: 1;">
+                <div style="text-align:center; width: 100%;">
+                    <div style="width:68px;height:68px;border-radius:18px;background:linear-gradient(135deg,#ffd1dc,#ff7b9b);display:inline-flex;align-items:center;justify-content:center;font-size:28px;color:#330; margin: 0 auto 16px;">🔒</div>
+                    <h1>私密解锁</h1>
+                    <p class="sub">请输入密码继续</p>
+                </div>
+                <div class="lockbox">
+                    <input id="pwd" type="password" placeholder="请输入密码" autocomplete="off" />
+                    <button class="unlock" id="unlockBtn">解锁</button>
+                </div>
+                <div class="password-strength" id="passwordStrength">
+                    <div class="strength-bar" id="strengthBar"></div>
+                </div>
+                <div class="error-message" id="errorMessage">密码错误，请重试！</div>
+                <div class="attempts-counter" id="attemptsCounter">剩余尝试次数: <span id="attemptsLeft">5</span></div>
+                <footer class="small">体验演示 · 保密界面</footer>
+            </div>
 
-    <!-- 人机验证模态框 -->
-    <div class="modal" id="captchaModal">
-      <div class="modal-content">
-        <h2>人机验证</h2>
-        <p class="sub">请回答以下问题以确认您是人类</p>
-        <div class="captcha-box">
-          <div class="captcha-question" id="captchaQuestion"></div>
-          <input type="text" id="captchaInput" class="captcha-input" placeholder="输入答案" autocomplete="off" />
-          <div class="error-msg" id="errorMsg">答案错误，请重试！</div>
-          <button class="captcha-btn" id="captchaBtn">验证</button>
-        </div>
-      </div>
-    </div>
+            <!-- PAGE 1 -->
+            <div class="page" id="page-1" style="z-index:2; transform: translateY(100%); opacity: 0;">
+                <div class="swipe-area" id="swipeArea">
+                    <div class="swipe-card" id="swipeCard">
+                        <h1>成人专区</h1>
+                        <p class="sub">继续请向上滑动</p>
+                        <div class="emoji-row">🔞 😋 😍 🤩 😇</div>
+                        <div class="pattern">
+                            <div class="shape">💋</div>
+                            <div class="shape">♡</div>
+                            <div class="shape">✨</div>
+                            <div class="shape">💃</div>
+                        </div>
+                        <div class="swipe-hint">向上滑动以查看内容</div>
+                        <div class="swipe-track" id="swipeTrack"><div class="swipe-knob" id="swipeKnob"></div></div>
+                    </div>
+                </div>
+            </div>
 
-    <!-- 加载层 -->
-    <div class="loading-overlay" id="loading">
-      <div class="spinner"></div>
-      <div id="loadingText">正在加载内容，请稍候...</div>
-      <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
-    </div>
+            <!-- 人机验证模态框 -->
+            <div class="modal" id="captchaModal">
+                <div class="modal-content">
+                    <h2>人机验证</h2>
+                    <p class="sub">请回答以下问题以确认您是人类</p>
+                    <div class="captcha-box">
+                        <div class="captcha-question" id="captchaQuestion"></div>
+                        <input type="text" id="captchaInput" class="captcha-input" placeholder="输入答案" autocomplete="off" />
+                        <div class="error-msg" id="errorMsg">答案错误，请重试！</div>
+                        <button class="captcha-btn" id="captchaBtn">验证</button>
+                    </div>
+                </div>
+            </div>
 
-    <!-- 自定义弹窗 -->
-    <div class="modal" id="trickModal">
-      <div class="modal-content">
-        <p>请点击下面链接以查看每日热门影片</p>
-        <button id="goLink">前往链接</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-(function(){
-  const PASSWORD = "shaoyuniubi";
-  const pages = [document.getElementById('page-0'), document.getElementById('page-1')];
-  const loading = document.getElementById('loading');
-  const progressBar = document.getElementById('progressBar');
-  const loadingText = document.getElementById('loadingText');
-  const modal = document.getElementById('trickModal');
-  const captchaModal = document.getElementById('captchaModal');
-  const goLinkBtn = document.getElementById('goLink');
-  let index = 0;
-  let captchaCorrect = false; // 标记人机验证是否通过
-
-  // 生成随机数学题 - 更难版本
-  function generateCaptcha() {
-    const num1 = Math.floor(Math.random() * 20) + 1;
-    const num2 = Math.floor(Math.random() * 20) + 1;
-    const operators = ['+', '-', '*', '/'];
-    const op = operators[Math.floor(Math.random() * operators.length)];
-    let answer;
-    let question;
-    switch(op) {
-      case '+': 
-        answer = num1 + num2; 
-        question = `${num1} + ${num2} = ?`; 
-        break;
-      case '-': 
-        if (num1 < num2) [num1, num2] = [num2, num1]; // 确保正数
-        answer = num1 - num2; 
-        question = `${num1} - ${num2} = ?`; 
-        break;
-      case '*': 
-        answer = num1 * num2; 
-        question = `${num1} × ${num2} = ?`; 
-        break;
-      case '/': 
-        // 确保可整除
-        const divisor = Math.floor(Math.random() * 10) + 1;
-        const quotient = Math.floor(Math.random() * 10) + 1;
-        num1 = divisor * quotient;
-        num2 = divisor;
-        answer = quotient;
-        question = `${num1} ÷ ${num2} = ?`; 
-        break;
-    }
-    document.getElementById('captchaQuestion').textContent = question;
-    return answer.toString();
-  }
-
-  // 人机验证事件
-  const captchaBtn = document.getElementById('captchaBtn');
-  const captchaInput = document.getElementById('captchaInput');
-  const errorMsg = document.getElementById('errorMsg');
-  let correctAnswer = generateCaptcha();
-
-  captchaBtn.addEventListener('click', () => {
-    const userAnswer = captchaInput.value.trim();
-    if (userAnswer === correctAnswer) {
-      captchaCorrect = true;
-      captchaModal.classList.remove('active');
-      triggerTrick(); // 直接触发加载
-    } else {
-      errorMsg.style.display = 'block';
-      captchaInput.value = '';
-      correctAnswer = generateCaptcha(); // 重新生成题目
-      setTimeout(() => { errorMsg.style.display = 'none'; }, 2000);
-    }
-  });
-
-  captchaInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') captchaBtn.click();
-  });
-
-  function updatePages() {
-    pages.forEach((p,i)=>{
-      if (i === index) {
-        p.style.zIndex = 3;
-        p.style.opacity = 1;
-      } else {
-        p.style.zIndex = 2;
-        p.style.opacity = 0;
-      }
-      p.style.transform = `translateY(${(i - index) * 100}%)`;
-    });
-  }
-
-  const unlockBtn = document.getElementById('unlockBtn');
-  const pwdInput = document.getElementById('pwd');
-  unlockBtn.addEventListener('click', tryUnlock);
-  pwdInput.addEventListener('keydown', e=>{ if(e.key==='Enter') tryUnlock(); });
-
-  function tryUnlock(){
-    const inputValue = pwdInput.value.trim(); // 添加 trim 以去除空格
-    if(inputValue === PASSWORD){
-      index=1; 
-      updatePages(); 
-      pwdInput.value = "";
-      console.log("解锁成功，切换页面"); // 添加调试日志
-    } else {
-      alert("密码错误！");
-      console.log("密码错误: " + inputValue); // 添加调试日志
-    }
-  }
-
-  const swipeArea = document.getElementById('swipeArea');
-  const swipeKnob = document.getElementById('swipeKnob');
-  const swipeTrack = document.getElementById('swipeTrack');
-  let startY=null,swipeActive=false,mouseDown=false;
-
-  function handleSwipe(dy){
-    if(dy>0){
-      const trackW=swipeTrack.clientWidth-52;
-      let prog = Math.min(1, dy/(swipeArea.clientHeight*0.4));
-      swipeKnob.style.transform=`translateX(${prog*trackW}px)`;
-      if(prog>=1){
-        swipeActive=false;
-        mouseDown=false;
-        if (captchaCorrect) {
-          triggerTrick();
-        } else {
-          captchaModal.classList.add('active'); // 显示人机验证
-        }
-      }
-    }
-  }
-
-  swipeArea.addEventListener('touchstart',e=>{startY=e.touches[0].clientY;swipeActive=true;});
-  swipeArea.addEventListener('touchmove',e=>{
-    if(!swipeActive||startY===null)return;
-    handleSwipe(startY-e.touches[0].clientY);
-  });
-  swipeArea.addEventListener('touchend',()=>{swipeKnob.style.transform="translateX(0)";swipeActive=false;startY=null;});
-  swipeArea.addEventListener('mousedown',e=>{mouseDown=true;startY=e.clientY;swipeActive=true;});
-  window.addEventListener('mousemove',e=>{
-    if(!mouseDown||!swipeActive)return;
-    handleSwipe(startY-e.clientY);
-  });
-  window.addEventListener('mouseup',()=>{mouseDown=false;swipeKnob.style.transform="translateX(0)";});
-
-  function triggerTrick(){
-    loading.classList.add('active');
-    let progress = 0;
-    const tips = ["解析中…","加载资源…","即将完成…"];
-    const timer = setInterval(()=>{
-      progress += Math.random()*10 + 5;
-      if(progress>=100){
-        progress=100;
-        clearInterval(timer);
-        setTimeout(()=>{
-          loading.classList.remove('active');
-          modal.classList.add('active');
-        },500);
-      }
-      progressBar.style.width = progress + "%";
-      loadingText.textContent = `${tips[Math.floor(Math.random()*tips.length)]} ${Math.floor(progress)}%`;
-    },1000); // 延长间隔至1秒，使总时间约10秒
-  }
-
-  goLinkBtn.addEventListener('click',()=>{window.location.href="https://b23.tv/RtDSAPY";});
-
-  updatePages();
-})();
-</script>
-</body>
-</html>
+            <!-- 加载层 -->
+      
