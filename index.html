@@ -619,6 +619,16 @@
             border-radius: 10px;
             transition: width 1s linear;
         }
+        
+        /* 新增：右下角水印样式 */
+        .watermark {
+            position: absolute;
+            right: 12px;
+            bottom: 10px;
+            color: rgba(255, 255, 255, 0.18);
+            font-size: 12px;
+            z-index: 100;
+        }
     </style>
 </head>
 <body>
@@ -647,6 +657,8 @@
                 <div class="error-message" id="errorMessage">密码错误，请重试！</div>
                 <div class="attempts-counter" id="attemptsCounter">剩余尝试次数: <span id="attemptsLeft">5</span></div>
                 <footer class="small">体验演示 · 保密界面</footer>
+                <!-- 新增：右下角水印 -->
+                <div class="watermark">by.旺仔小乔and少羽</div>
             </div>
 
             <!-- PAGE 1 -->
@@ -666,6 +678,8 @@
                         <div class="swipe-track" id="swipeTrack"><div class="swipe-knob" id="swipeKnob"></div></div>
                     </div>
                 </div>
+                <!-- 新增：右下角水印 -->
+                <div class="watermark">by.旺仔小乔and少羽</div>
             </div>
 
             <!-- 人机验证模态框 -->
@@ -771,17 +785,27 @@
 
             // 修改：在线人数统计功能
             function updateUserCount() {
-                // 在线人数通常比总使用人数少，设置一个较小的范围
+                // 在线人数在80-250之间随机
                 let onlineCount = localStorage.getItem('onlineCount');
                 if (!onlineCount) {
-                    // 初始化为一个随机数，模拟在线人数 (80-250之间)
+                    // 初始化为80-250之间的随机数
                     onlineCount = Math.floor(Math.random() * 171) + 80; // 80-250之间
                     localStorage.setItem('onlineCount', onlineCount);
                 } else {
-                    // 在线人数会有波动，可能增加也可能减少
+                    // 在线人数会有更随机的波动
                     onlineCount = parseInt(onlineCount);
-                    const change = Math.floor(Math.random() * 7) - 3; // -3到+3之间的变化
-                    onlineCount = Math.max(50, onlineCount + change); // 确保不低于50人
+                    
+                    // 更随机的变化：-10到+10之间的变化，但确保在80-250范围内
+                    const change = Math.floor(Math.random() * 21) - 10; // -10到+10之间的变化
+                    onlineCount += change;
+                    
+                    // 确保在80-250范围内
+                    if (onlineCount < 80) {
+                        onlineCount = 80 + Math.floor(Math.random() * 10); // 如果低于80，随机增加到80-89
+                    } else if (onlineCount > 250) {
+                        onlineCount = 250 - Math.floor(Math.random() * 10); // 如果高于250，随机减少到240-249
+                    }
+                    
                     localStorage.setItem('onlineCount', onlineCount);
                 }
                 
@@ -791,8 +815,18 @@
                 // 每4秒自动更新在线人数（模拟实时波动）
                 setInterval(() => {
                     let currentCount = parseInt(localStorage.getItem('onlineCount')) || onlineCount;
-                    const change = Math.floor(Math.random() * 7) - 3; // -3到+3之间的变化
-                    currentCount = Math.max(50, currentCount + change); // 确保不低于50人
+                    
+                    // 更随机的变化：-10到+10之间的变化
+                    const change = Math.floor(Math.random() * 21) - 10; // -10到+10之间的变化
+                    currentCount += change;
+                    
+                    // 确保在80-250范围内
+                    if (currentCount < 80) {
+                        currentCount = 80 + Math.floor(Math.random() * 10); // 如果低于80，随机增加到80-89
+                    } else if (currentCount > 250) {
+                        currentCount = 250 - Math.floor(Math.random() * 10); // 如果高于250，随机减少到240-249
+                    }
+                    
                     localStorage.setItem('onlineCount', currentCount);
                     userCountElement.textContent = currentCount;
                 }, 4000); // 4秒更新一次
