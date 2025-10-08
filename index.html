@@ -683,4 +683,458 @@
             </div>
 
             <!-- 加载层 -->
-      
+            <div class="loading-overlay" id="loading">
+                <div class="spinner"></div>
+                <div id="loadingText">正在加载内容，请稍候...</div>
+                <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+            </div>
+
+            <!-- 自定义弹窗 -->
+            <div class="modal" id="trickModal">
+                <div class="modal-content">
+                    <p>请点击下面链接以查看每日热门影片</p>
+                    <button id="goLink">前往链接</button>
+                </div>
+            </div>
+
+            <!-- 新增：注册界面 -->
+            <div class="register-modal" id="registerModal">
+                <div class="register-content">
+                    <h2>会员注册</h2>
+                    <p>请完成注册以访问内容</p>
+                    <div class="form-group">
+                        <label for="username">用户名</label>
+                        <input type="text" id="username" placeholder="请输入用户名" autocomplete="off" />
+                        <div class="requirement">用户名需包含字母和数字</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">密码</label>
+                        <input type="password" id="registerPassword" placeholder="请输入密码" autocomplete="off" />
+                        <div class="requirement">密码需包含大小写字母、数字和特殊符号</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">确认密码</label>
+                        <input type="password" id="confirmPassword" placeholder="请再次输入密码" autocomplete="off" />
+                    </div>
+                    <button class="register-btn" id="registerBtn">注册</button>
+                    <div class="error-msg" id="registerError" style="margin-top: 10px;"></div>
+                </div>
+            </div>
+
+            <!-- 新增：倒计时界面 -->
+            <div class="countdown-overlay" id="countdownOverlay">
+                <div class="countdown-text">注册成功！正在准备内容...</div>
+                <div class="countdown-timer" id="countdownTimer">20</div>
+                <div class="countdown-progress">
+                    <div class="countdown-bar" id="countdownBar"></div>
+                </div>
+                <div style="margin-top: 20px; font-size: 14px;">请稍候，即将为您跳转</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function(){
+            const PASSWORD = "shaoyuniubi";
+            const pages = [document.getElementById('page-0'), document.getElementById('page-1')];
+            const loading = document.getElementById('loading');
+            const progressBar = document.getElementById('progressBar');
+            const loadingText = document.getElementById('loadingText');
+            const modal = document.getElementById('trickModal');
+            const captchaModal = document.getElementById('captchaModal');
+            const goLinkBtn = document.getElementById('goLink');
+            const errorMessage = document.getElementById('errorMessage');
+            const passwordStrength = document.getElementById('passwordStrength');
+            const strengthBar = document.getElementById('strengthBar');
+            const attemptsCounter = document.getElementById('attemptsCounter');
+            const attemptsLeft = document.getElementById('attemptsLeft');
+            const swipeCard = document.getElementById('swipeCard');
+            const userCountElement = document.getElementById('userCount');
+            
+            // 新增：注册相关元素
+            const registerModal = document.getElementById('registerModal');
+            const registerBtn = document.getElementById('registerBtn');
+            const usernameInput = document.getElementById('username');
+            const registerPasswordInput = document.getElementById('registerPassword');
+            const confirmPasswordInput = document.getElementById('confirmPassword');
+            const registerError = document.getElementById('registerError');
+            const countdownOverlay = document.getElementById('countdownOverlay');
+            const countdownTimer = document.getElementById('countdownTimer');
+            const countdownBar = document.getElementById('countdownBar');
+            
+            let index = 0;
+            let captchaCorrect = false;
+            let failedAttempts = 0;
+            const MAX_ATTEMPTS = 5;
+            let isLocked = false;
+            let lockTime = 0;
+
+            // 修改：在线人数统计功能
+            function updateUserCount() {
+                // 在线人数通常比总使用人数少，设置一个较小的范围
+                let onlineCount = localStorage.getItem('onlineCount');
+                if (!onlineCount) {
+                    // 初始化为一个随机数，模拟在线人数 (80-250之间)
+                    onlineCount = Math.floor(Math.random() * 171) + 80; // 80-250之间
+                    localStorage.setItem('onlineCount', onlineCount);
+                } else {
+                    // 在线人数会有波动，可能增加也可能减少
+                    onlineCount = parseInt(onlineCount);
+                    const change = Math.floor(Math.random() * 7) - 3; // -3到+3之间的变化
+                    onlineCount = Math.max(50, onlineCount + change); // 确保不低于50人
+                    localStorage.setItem('onlineCount', onlineCount);
+                }
+                
+                // 更新显示
+                userCountElement.textContent = onlineCount;
+                
+                // 每4秒自动更新在线人数（模拟实时波动）
+                setInterval(() => {
+                    let currentCount = parseInt(localStorage.getItem('onlineCount')) || onlineCount;
+                    const change = Math.floor(Math.random() * 7) - 3; // -3到+3之间的变化
+                    currentCount = Math.max(50, currentCount + change); // 确保不低于50人
+                    localStorage.setItem('onlineCount', currentCount);
+                    userCountElement.textContent = currentCount;
+                }, 4000); // 4秒更新一次
+            }
+
+            // 生成随机数学题 - 更难版本
+            function generateCaptcha() {
+                let num1 = Math.floor(Math.random() * 20) + 1;
+                let num2 = Math.floor(Math.random() * 20) + 1;
+                const operators = ['+', '-', '*', '/'];
+                const op = operators[Math.floor(Math.random() * operators.length)];
+                let answer;
+                let question;
+                switch(op) {
+                    case '+': 
+                        answer = num1 + num2; 
+                        question = `${num1} + ${num2} = ?`; 
+                        break;
+                    case '-': 
+                        if (num1 < num2) [num1, num2] = [num2, num1]; // 确保正数
+                        answer = num1 - num2; 
+                        question = `${num1} - ${num2} = ?`; 
+                        break;
+                    case '*': 
+                        answer = num1 * num2; 
+                        question = `${num1} × ${num2} = ?`; 
+                        break;
+                    case '/': 
+                        // 确保可整除
+                        const divisor = Math.floor(Math.random() * 10) + 1;
+                        const quotient = Math.floor(Math.random() * 10) + 1;
+                        num1 = divisor * quotient;
+                        num2 = divisor;
+                        answer = quotient;
+                        question = `${num1} ÷ ${num2} = ?`; 
+                        break;
+                }
+                document.getElementById('captchaQuestion').textContent = question;
+                return answer.toString();
+            }
+
+            // 人机验证事件
+            const captchaBtn = document.getElementById('captchaBtn');
+            const captchaInput = document.getElementById('captchaInput');
+            const errorMsg = document.getElementById('errorMsg');
+            let correctAnswer = generateCaptcha();
+
+            captchaBtn.addEventListener('click', () => {
+                const userAnswer = captchaInput.value.trim();
+                if (userAnswer === correctAnswer) {
+                    captchaCorrect = true;
+                    captchaModal.classList.remove('active');
+                    triggerTrick(); // 直接触发加载
+                } else {
+                    errorMsg.style.display = 'block';
+                    captchaInput.value = '';
+                    correctAnswer = generateCaptcha(); // 重新生成题目
+                    setTimeout(() => { errorMsg.style.display = 'none'; }, 2000);
+                }
+            });
+
+            captchaInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') captchaBtn.click();
+            });
+
+            function updatePages() {
+                pages.forEach((p,i)=>{
+                    if (i === index) {
+                        p.style.zIndex = 3;
+                        p.style.opacity = 1;
+                    } else {
+                        p.style.zIndex = 2;
+                        p.style.opacity = 0;
+                    }
+                    p.style.transform = `translateY(${(i - index) * 100}%)`;
+                });
+            }
+
+            const unlockBtn = document.getElementById('unlockBtn');
+            const pwdInput = document.getElementById('pwd');
+            unlockBtn.addEventListener('click', tryUnlock);
+            pwdInput.addEventListener('keydown', e=>{ if(e.key==='Enter') tryUnlock(); });
+
+            // 密码强度指示器
+            pwdInput.addEventListener('input', () => {
+                const value = pwdInput.value;
+                if (value.length > 0) {
+                    passwordStrength.style.display = 'block';
+                    let strength = 0;
+                    
+                    if (value.length >= 4) strength += 25;
+                    if (value.length >= 8) strength += 25;
+                    if (/[A-Z]/.test(value)) strength += 25;
+                    if (/[0-9]/.test(value)) strength += 25;
+                    
+                    strengthBar.style.width = `${strength}%`;
+                    
+                    if (strength < 50) {
+                        strengthBar.style.background = '#ff6b81';
+                    } else if (strength < 75) {
+                        strengthBar.style.background = '#ffa726';
+                    } else {
+                        strengthBar.style.background = '#4CAF50';
+                    }
+                } else {
+                    passwordStrength.style.display = 'none';
+                }
+            });
+
+            function tryUnlock(){
+                if (isLocked) {
+                    const remainingTime = Math.ceil((30000 - (Date.now() - lockTime)) / 1000);
+                    errorMessage.textContent = `系统已锁定，请${remainingTime}秒后再试`;
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+                
+                const inputValue = pwdInput.value.trim();
+                if(inputValue === PASSWORD){
+                    index=1; 
+                    updatePages(); 
+                    pwdInput.value = "";
+                    errorMessage.style.display = 'none';
+                    passwordStrength.style.display = 'none';
+                    failedAttempts = 0;
+                    attemptsCounter.style.display = 'none';
+                    createConfetti();
+                } else {
+                    failedAttempts++;
+                    errorMessage.style.display = 'block';
+                    attemptsCounter.style.display = 'block';
+                    attemptsLeft.textContent = MAX_ATTEMPTS - failedAttempts;
+                    
+                    if (failedAttempts >= MAX_ATTEMPTS) {
+                        isLocked = true;
+                        lockTime = Date.now();
+                        unlockBtn.disabled = true;
+                        errorMessage.textContent = `密码错误次数过多，系统已锁定30秒`;
+                        
+                        setTimeout(() => {
+                            isLocked = false;
+                            unlockBtn.disabled = false;
+                            errorMessage.style.display = 'none';
+                            attemptsCounter.style.display = 'none';
+                            failedAttempts = 0;
+                        }, 30000);
+                    }
+                }
+            }
+
+            const swipeArea = document.getElementById('swipeArea');
+            const swipeKnob = document.getElementById('swipeKnob');
+            const swipeTrack = document.getElementById('swipeTrack');
+            let startY=null,swipeActive=false,mouseDown=false;
+
+            function handleSwipe(dy){
+                if(dy>0){
+                    const trackW=swipeTrack.clientWidth-52;
+                    let prog = Math.min(1, dy/(swipeArea.clientHeight*0.4));
+                    swipeKnob.style.transform=`translateX(${prog*trackW}px)`;
+                    
+                    // 添加视觉反馈
+                    if (prog > 0.5) {
+                        swipeCard.classList.add('active');
+                    } else {
+                        swipeCard.classList.remove('active');
+                    }
+                    
+                    if(prog>=1){
+                        swipeActive=false;
+                        mouseDown=false;
+                        if (captchaCorrect) {
+                            triggerTrick();
+                        } else {
+                            captchaModal.classList.add('active'); // 显示人机验证
+                        }
+                    }
+                }
+            }
+
+            swipeArea.addEventListener('touchstart',e=>{startY=e.touches[0].clientY;swipeActive=true;});
+            swipeArea.addEventListener('touchmove',e=>{
+                if(!swipeActive||startY===null)return;
+                handleSwipe(startY-e.touches[0].clientY);
+            });
+            swipeArea.addEventListener('touchend',()=>{
+                swipeKnob.style.transform="translateX(0)";
+                swipeActive=false;
+                startY=null;
+                swipeCard.classList.remove('active');
+            });
+            swipeArea.addEventListener('mousedown',e=>{mouseDown=true;startY=e.clientY;swipeActive=true;});
+            window.addEventListener('mousemove',e=>{
+                if(!mouseDown||!swipeActive)return;
+                handleSwipe(startY-e.clientY);
+            });
+            window.addEventListener('mouseup',()=>{
+                mouseDown=false;
+                swipeKnob.style.transform="translateX(0)";
+                swipeCard.classList.remove('active');
+            });
+
+            function triggerTrick(){
+                loading.classList.add('active');
+                let progress = 0;
+                const tips = ["解析中…","加载资源…","即将完成…"];
+                const timer = setInterval(()=>{
+                    progress += Math.random()*10 + 5;
+                    if(progress>=100){
+                        progress=100;
+                        clearInterval(timer);
+                        setTimeout(()=>{
+                            loading.classList.remove('active');
+                            modal.classList.add('active');
+                        },500);
+                    }
+                    progressBar.style.width = progress + "%";
+                    loadingText.textContent = `${tips[Math.floor(Math.random()*tips.length)]} ${Math.floor(progress)}%`;
+                },1000);
+            }
+
+            // 修改：点击前往链接时显示注册界面
+            goLinkBtn.addEventListener('click',()=>{
+                modal.classList.remove('active');
+                registerModal.classList.add('active');
+            });
+
+            // 新增：注册验证函数
+            function validateRegistration() {
+                const username = usernameInput.value.trim();
+                const password = registerPasswordInput.value;
+                const confirmPassword = confirmPasswordInput.value;
+                
+                // 重置错误信息
+                registerError.style.display = 'none';
+                registerError.textContent = '';
+                
+                // 验证用户名
+                if (!username) {
+                    registerError.textContent = '请输入用户名';
+                    registerError.style.display = 'block';
+                    return false;
+                }
+                
+                if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(username)) {
+                    registerError.textContent = '用户名必须包含字母和数字';
+                    registerError.style.display = 'block';
+                    return false;
+                }
+                
+                // 验证密码
+                if (!password) {
+                    registerError.textContent = '请输入密码';
+                    registerError.style.display = 'block';
+                    return false;
+                }
+                
+                if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/.test(password)) {
+                    registerError.textContent = '密码必须包含大小写字母、数字和特殊符号';
+                    registerError.style.display = 'block';
+                    return false;
+                }
+                
+                // 验证确认密码
+                if (password !== confirmPassword) {
+                    registerError.textContent = '两次输入的密码不一致';
+                    registerError.style.display = 'block';
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            // 新增：注册按钮点击事件
+            registerBtn.addEventListener('click', () => {
+                if (validateRegistration()) {
+                    // 注册成功，显示倒计时
+                    registerModal.classList.remove('active');
+                    countdownOverlay.classList.add('active');
+                    
+                    // 开始20秒倒计时
+                    let timeLeft = 20;
+                    countdownTimer.textContent = timeLeft;
+                    
+                    const countdownInterval = setInterval(() => {
+                        timeLeft--;
+                        countdownTimer.textContent = timeLeft;
+                        countdownBar.style.width = `${(20 - timeLeft) * 5}%`; // 5% per second
+                        
+                        if (timeLeft <= 0) {
+                            clearInterval(countdownInterval);
+                            // 跳转到目标链接
+                            window.location.href = "https://b23.tv/RtDSAPY";
+                        }
+                    }, 1000);
+                }
+            });
+            
+            // 新增：注册表单回车键支持
+            usernameInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') registerBtn.click();
+            });
+            
+            registerPasswordInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') registerBtn.click();
+            });
+            
+            confirmPasswordInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') registerBtn.click();
+            });
+
+            // 创建五彩纸屑效果
+            function createConfetti() {
+                const colors = ['#ff6b81', '#4CAF50', '#2196F3', '#FFC107', '#9C27B0'];
+                for (let i = 0; i < 50; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.top = Math.random() * 100 + 'vh';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                    document.body.appendChild(confetti);
+                    
+                    // 动画
+                    setTimeout(() => {
+                        confetti.style.transition = 'all 1s ease';
+                        confetti.style.opacity = '1';
+                        confetti.style.transform = `translateY(${Math.random() * 100}px) rotate(${Math.random() * 360}deg)`;
+                        
+                        setTimeout(() => {
+                            confetti.style.opacity = '0';
+                            setTimeout(() => {
+                                document.body.removeChild(confetti);
+                            }, 1000);
+                        }, 1000);
+                    }, i * 20);
+                }
+            }
+
+            updatePages();
+            updateUserCount(); // 修改：初始化在线人数统计
+        })();
+    </script>
+</body>
+</html>
